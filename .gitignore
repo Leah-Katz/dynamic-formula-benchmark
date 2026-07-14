@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# .NET
+bin/
+obj/
+
+# Angular
+report/node_modules/
+report/dist/
+report/.angular/
+
+# Env / local overrides
+.env
+
+# OS
+.DS_Store
+Thumbs.db
