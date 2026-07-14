@@ -92,31 +92,31 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'dashboard.loading': 'Loading benchmark results…',
   },
   he: {
-    'app.title': "בנצ'מרק להערכת נוסחאות דינמיות",
+    'app.title': 'השוואת ביצועים — הערכת נוסחאות דינמיות',
     'app.subtitle':
-      '{count} נוסחאות × 1,000,000 שורות, מחושבות על ידי 5 מנועים (Python eval(), NumPy, ' +
-      'C# DataTable.Compute, C# Expression Trees, T-SQL sp_executesql) ומאומתות הצלבה מול כל המנועים לבדיקת נכונות.',
+      '{count} נוסחאות על פני 1,000,000 שורות, מחושבות בחמישה מנועים שונים (Python eval(), NumPy, ' +
+      'C# DataTable.Compute, C# Expression Trees, T-SQL sp_executesql), עם הצלבת תוצאות בין כל המנועים לאימות נכונות.',
 
     'lang.toggleLabel': 'שפה',
 
-    'badge.allAgree': 'כל השיטות מסכימות',
-    'badge.mismatch': 'אותרה אי-התאמה',
-    'badge.detailPass': 'כל 5 השיטות הפיקו תוצאות זהות (סף סטייה {tolerance})',
+    'badge.allAgree': 'כל השיטות הניבו תוצאות זהות',
+    'badge.mismatch': 'נמצאה אי-התאמה',
+    'badge.detailPass': 'כל 5 השיטות הניבו תוצאות זהות (סף סטייה של {tolerance})',
     'badge.detailFail':
-      'אותרו {rowFail} אי-התאמות ברמת השורה ו-{fullFail} אי-התאמות במלוא מערך הנתונים',
+      'נמצאו {rowFail} אי-התאמות ברמת השורה ו-{fullFail} אי-התאמות במלוא מערך הנתונים',
     'badge.naNote':
-      '{count} צירופי נוסחה/שיטה מסומנים כ-"לא רלוונטי" — מגבלה מתועדת ' +
-      '(ל-DataTable.Compute אין אפשרות לבטא sqrt/log, ראו את הממצא למטה), ולא כישלון',
+      '{count} צירופי נוסחה-שיטה מסומנים כ"לא רלוונטי" — מגבלה מתועדת של DataTable.Compute ' +
+      '(אינו מסוגל לבטא sqrt/log, ראו את הממצא למטה), ולא כישלון בפועל',
 
     'summary.recommended': 'השיטה המומלצת',
     'summary.formulasBenchmarked': 'נוסחאות שנבדקו',
     'summary.fastestTotal': 'זמן ריצה כולל מהיר ביותר ({label})',
     'summary.slowestTotal': 'זמן ריצה כולל איטי ביותר ({label})',
-    'summary.spread': 'טווח: מהיר מול איטי',
+    'summary.spread': 'פער בין המהיר ביותר לאיטי ביותר',
 
-    'coverage.title': 'ממצא: ל-DataTable.Compute אין אפשרות לבטא כל נוסחה',
+    'coverage.title': 'ממצא: DataTable.Compute אינו מסוגל לבטא את כל הנוסחאות',
     'coverage.body':
-      'לדקדוק הביטויים של DataColumn.Expression ב-System.Data אין בכלל פונקציות Sqrt, Log או Pow/^ — דבר שאומת בבדיקה ישירה מול ה-runtime של .NET הזה, ולא הנחה (ראו REPORT.md §1). 4 מתוך 13 הנוסחאות (#6, #7, #12, #13) מדולגות עבור שיטה זו במקום להתחזות עם עקיפה שגויה, משום שהתחזות כזו היתה פוגעת בהשוואת הנכונות בין המנועים. זהו ממצא אמיתי ומוצהר בגלוי על מגבלות הביטוי של השיטה — ולא יישום לא גמור.',
+      'לשפת הביטויים של DataColumn.Expression ב-System.Data אין בכלל פונקציות Sqrt, Log או Pow/^ — עובדה שאומתה בבדיקה ישירה מול ה-runtime של .NET, ולא הונחה מראש (ראו REPORT.md, סעיף 1). ארבע מתוך 13 הנוסחאות (#6, #7, #12, #13) מדולגות עבור השיטה הזו, במקום להתחזות באמצעות עקיפה שגויה שהייתה פוגעת בהשוואת הנכונות בין המנועים. זהו ממצא אמיתי וגלוי על מגבלות הביטוי של השיטה — לא יישום חסר.',
     'coverage.skippedLabel': 'נוסחאות שדולגו:',
     'coverage.reasonSqrt': 'אין פונקציית ()Sqrt',
     'coverage.reasonLog': 'אין פונקציית ()Log',
@@ -125,10 +125,10 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'table.method': 'שיטה',
     'table.formulas': 'נוסחאות',
     'table.totalRuntime': 'זמן ריצה כולל',
-    'table.rowsPerSec': 'שורות/שנייה',
-    'table.speedup': 'פי מהירות מול האיטי ביותר',
+    'table.rowsPerSec': 'שורות לשנייה',
+    'table.speedup': 'מקדם האצה מול האיטי ביותר',
     'table.coverageTooltip':
-      '{count} מתוך {total} נוסחאות — ל-DataColumn.Expression אין אפשרות לבטא sqrt/log ' +
+      '{count} מתוך {total} נוסחאות — DataColumn.Expression אינו מסוגל לבטא sqrt/log ' +
       '(ראו את הממצא למעלה)',
 
     'common.logScale': 'סולם לוגריתמי',
@@ -150,7 +150,7 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
 
     'breakdown.title': 'פילוח זמן: הידור / חישוב / שמירה',
     'breakdown.note':
-      'שלבי החישוב והשמירה של T-SQL sp_executesql סורקים ומחשבים מחדש את הנוסחה באופן עצמאי (אין תוצאה משותפת בזיכרון בין הפקודות) — הפילוח שלה אינו פירוק נקי מול ארבעת השיטות האחרות. ראו REPORT.md.',
+      'שלבי החישוב והשמירה של T-SQL sp_executesql סורקים את הנתונים ומחשבים את הנוסחה מחדש כל אחד בנפרד (אין תוצאת ביניים משותפת בזיכרון בין הפקודות) — לכן הפילוח שלה אינו ניתן להשוואה ישירה מול ארבעת השיטות האחרות. ראו REPORT.md.',
     'breakdown.compile': 'הידור',
     'breakdown.eval': 'חישוב',
     'breakdown.persist': 'שמירה',
@@ -166,6 +166,6 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'catalog.none': '—',
 
     'dashboard.summaryTable': 'טבלת סיכום',
-    'dashboard.loading': "טוען תוצאות בנצ'מרק…",
+    'dashboard.loading': 'טוען את תוצאות ההשוואה…',
   },
 };
