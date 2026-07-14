@@ -834,6 +834,8 @@
       "totalRowsProcessed": 13000000,
       "rowsPerSec": 4408610.6541605005,
       "formulaCount": 13,
+      "totalFormulaCount": 13,
+      "missingFormulaIds": [],
       "speedupVsSlowest": 26.146485482012785
     },
     {
@@ -843,6 +845,8 @@
       "totalRowsProcessed": 13000000,
       "rowsPerSec": 1060386.568001775,
       "formulaCount": 13,
+      "totalFormulaCount": 13,
+      "missingFormulaIds": [],
       "speedupVsSlowest": 6.28891598295593
     },
     {
@@ -852,6 +856,13 @@
       "totalRowsProcessed": 9000000,
       "rowsPerSec": 691357.5330593345,
       "formulaCount": 9,
+      "totalFormulaCount": 13,
+      "missingFormulaIds": [
+        6,
+        7,
+        12,
+        13
+      ],
       "speedupVsSlowest": 5.922637022755523
     },
     {
@@ -861,6 +872,8 @@
       "totalRowsProcessed": 13000000,
       "rowsPerSec": 950164.396485111,
       "formulaCount": 13,
+      "totalFormulaCount": 13,
+      "missingFormulaIds": [],
       "speedupVsSlowest": 5.635212892927637
     },
     {
@@ -870,6 +883,8 @@
       "totalRowsProcessed": 13000000,
       "rowsPerSec": 168611.97873776802,
       "formulaCount": 13,
+      "totalFormulaCount": 13,
+      "missingFormulaIds": [],
       "speedupVsSlowest": 1.0
     }
   ],
@@ -883,10 +898,11 @@
     "fullDatasetPass": 114,
     "fullDatasetFail": 0,
     "fullDatasetNa": 16,
-    "generatedAt": "2026-07-14T16:09:47.244010+00:00"
+    "generatedAt": "2026-07-14T18:36:06.463333+00:00"
   },
   "winner": {
     "method": "dotnet_exprtree",
-    "justification": "Fastest method that covers every formula in the catalog: 2949 ms total, 4408611 rows/sec, 26x faster than the slowest method. Compiles each formula once into a cached delegate, avoiding both per-row re-parsing and a DB round trip per formula."
+    "justificationEn": "Fastest method that covers every formula in the catalog: 2949 ms total, 4408611 rows/sec, 26x faster than the slowest method. Compiles each formula once into a cached delegate, avoiding both per-row re-parsing and a DB round trip per formula.",
+    "justificationHe": "\u05d4\u05e9\u05d9\u05d8\u05d4 \u05d4\u05de\u05d4\u05d9\u05e8\u05d4 \u05d1\u05d9\u05d5\u05ea\u05e8 \u05e9\u05de\u05db\u05e1\u05d4 \u05d0\u05ea \u05db\u05dc \u05d4\u05e0\u05d5\u05e1\u05d7\u05d0\u05d5\u05ea \u05d1\u05e7\u05d8\u05dc\u05d5\u05d2: 2949 ms \u05e1\u05d4\"\u05db, 4408611 \u05e9\u05d5\u05e8\u05d5\u05ea \u05d1\u05e9\u05e0\u05d9\u05d9\u05d4, \u05e4\u05d9 26 \u05de\u05d4\u05d9\u05e8 \u05d9\u05d5\u05ea\u05e8 \u05de\u05d4\u05e9\u05d9\u05d8\u05d4 \u05d4\u05d0\u05d9\u05d8\u05d9\u05ea \u05d1\u05d9\u05d5\u05ea\u05e8. \u05de\u05d4\u05d3\u05e8\u05ea \u05db\u05dc \u05e0\u05d5\u05e1\u05d7\u05d4 \u05e4\u05e2\u05dd \u05d0\u05d7\u05ea \u05dc\u05e0\u05e6\u05d9\u05d2 (delegate) \u05e9\u05de\u05d5\u05e8 \u05d1\u05de\u05d8\u05de\u05d5\u05df, \u05d5\u05db\u05da \u05e0\u05de\u05e0\u05e2\u05ea \u05d2\u05dd \u05de\u05e4\u05e2\u05e0\u05d5\u05d7 \u05d7\u05d5\u05d6\u05e8 \u05e9\u05dc \u05d4\u05e0\u05d5\u05e1\u05d7\u05d4 \u05d1\u05db\u05dc \u05e9\u05d5\u05e8\u05d4 \u05d5\u05d2\u05dd \u05de\u05e1\u05d1\u05d1 \u05ea\u05e7\u05e9\u05d5\u05e8\u05ea \u05e0\u05d5\u05e1\u05e3 \u05de\u05d5\u05dc \u05de\u05e1\u05d3 \u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e2\u05d1\u05d5\u05e8 \u05db\u05dc \u05e0\u05d5\u05e1\u05d7\u05d4."
   }
 }
