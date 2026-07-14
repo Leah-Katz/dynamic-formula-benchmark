@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DataTableCompute/DataTableCompute.csproj" />
+  <Project Path="ExpressionTrees/ExpressionTrees.csproj" />
+  <Project Path="PaymentSystem.Shared/PaymentSystem.Shared.csproj" />
+</Solution>
