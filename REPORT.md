@@ -33,17 +33,157 @@ lives.
 ### C# `DataTable.Compute`
 The "naive baseline" the assignment explicitly asks for — and it under-delivers in
 a way that's more interesting than just being slow. `System.Data.DataColumn`'s
-expression language turns out to have **no `Sqrt`, `Log`, or `Pow`/`^` at all**,
-and its `Abs`/`Min`/`Max` are aggregate-only functions that silently return
-`DBNull` when applied per-row rather than throwing (verified directly against this
-.NET runtime — see `DataColumnExpressionEmitter.cs`). Four of the thirteen
-formulas (6, 7, 12, 13 — anything needing `sqrt` or `log`) are **inexpressible**
-in this engine and are skipped with a logged reason, not silently faked. For the
-nine formulas it *can* express (`abs`/`min`/`max` rewritten as `IIF` expressions,
-`x^2` rewritten as `x*x` since every exponent in the catalog happens to be a
-literal 2), each `DataColumn.Compute` call re-parses the expression string from
-scratch — **10,868 ms of eval time**, roughly 13× slower per row than
-ExpressionTrees, because there's no compilation step to amortize.
+expression language turns out to have **no `Sqrt`, `Log`, or `Pow`/`^` at all**.
+Four of the thirteen formulas (6, 7, 12, 13 — anything that needs `sqrt` or `log`,
+anywhere, including inside a condition) are **inexpressible** in this engine and
+are skipped with a logged reason, not silently faked — see the full evidence and
+explanation below. For the nine formulas it *can* express (`abs`/`min`/`max`
+rewritten as `IIF` expressions, `x^2` rewritten as `x*x` since every exponent in
+the catalog happens to be a literal 2), each `DataColumn.Compute` call re-parses
+the expression string from scratch — **10,868 ms of eval time**, roughly 13×
+slower per row than ExpressionTrees, because there's no compilation step to
+amortize.
+
+#### Evidence: the runtime's own error, not our interpretation of it
+
+We didn't infer this from documentation — we fed the .NET runtime the exact
+translated form of the failing formulas and caught what it threw. Every
+casing/syntax variant a reasonable person might try was tested, to rule out that
+this was a bug in our own translator (e.g. wrong capitalization):
+
+```
+Sqrt(c * c + d * d)   -> System.Data.EvaluateException:
+                          "The expression contains undefined function call Sqrt()."
+sqrt(c * c + d * d)   -> System.Data.EvaluateException:
+                          "The expression contains undefined function call sqrt()."
+SQRT(c * c + d * d)   -> System.Data.EvaluateException:
+                          "The expression contains undefined function call SQRT()."
+sQrT(c * c + d * d)   -> System.Data.EvaluateException:
+                          "The expression contains undefined function call sQrT()."
+Sqrt (c * c + d * d)  -> System.Data.EvaluateException:
+                          "The expression contains undefined function call Sqrt()."   (space before paren)
+Math.Sqrt(c)          -> System.Data.EvaluateException:
+                          "The expression contains undefined function call Math.Sqrt()."
+Log(c) / log(c) / LOG(c) / lOg(c)  -> same pattern, "undefined function call {as-typed}()."
+Pow(a, 2) / pow(a, 2) -> System.Data.EvaluateException:
+                          "The expression contains undefined function call Pow()."
+a ^ 2                 -> System.Data.EvaluateException:
+                          "The expression contains unsupported operator '^'."
+```
+
+Every variant — every casing, with or without a space before the parenthesis,
+single- or multi-argument, even namespace-qualified — fails identically. The
+exception type is .NET's own `System.Data.EvaluateException`, thrown from inside
+`System.Data.dll`'s expression parser; nothing in our code raises it. This rules
+out a translator bug on our side (wrong casing, wrong syntax): the function is
+simply not in the grammar, under any spelling.
+
+In the shipped engine, this knowledge is encoded as a proactive guard rather than
+a caught runtime exception — the translator rejects `sqrt`/`log`/non-square `pow`
+before ever constructing a `DataColumn`, so the raw `EvaluateException` above
+never actually surfaces at runtime; it's the evidence that justified writing the
+guard, not something the shipped code catches directly:
+
+- **Guard thrown**: `src/dotnet/DataTableCompute/DataColumnExpressionEmitter.cs:78-81`
+  (`sqrt`) and `:76-77`/`:66-67` (`pow`/non-square `^`) — each raises our own
+  `NotSupportedByDataTableComputeException` with a message naming the missing
+  function.
+- **Formula skipped**: `src/dotnet/DataTableCompute/Program.cs:60-65` — the engine
+  driver catches that exception per formula, records it, prints
+  `SKIPPED -- {message}`, and moves on to the next formula rather than aborting
+  the whole run or faking a result.
+
+Reproduce it yourself: `dotnet run --project src/dotnet/DataTableCompute -c
+Release` and read the `SKIPPED` lines in its console output directly.
+
+#### Why this happens: `DataColumn.Expression` is not a general expression language
+
+Per Microsoft's own reference documentation for `DataColumn.Expression`
+([learn.microsoft.com/dotnet/api/system.data.datacolumn.expression](https://learn.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression)),
+the property exists to do exactly three things: "filter rows, calculate the
+values in a column, or create an aggregate column." Its grammar is a small,
+closed set, not an extensible math library:
+
+- **Operators**: comparison (`< > <= >= = IN LIKE`), boolean concatenation
+  (`AND OR NOT`), arithmetic (`+ - * / %`), string concatenation (`+`).
+- **Functions** (exactly six, per the docs' own "Functions" section): `CONVERT`,
+  `LEN`, `ISNULL`, `IIF`, `TRIM`, `SUBSTRING`.
+- **Aggregates** (exactly seven, per the docs' own "Aggregates" section): `Sum`,
+  `Avg`, `Min`, `Max`, `Count`, `StDev`, `Var` — each applicable to exactly one
+  column, optionally through a `Parent`/`Child` relation reference. We confirmed
+  this empirically too: `Min(a, b)` (two columns) throws `System.Data.
+  SyntaxErrorException`: `"Syntax error in aggregate argument: Expecting a single
+  column argument with possible 'Child' qualifier"`, while `Min(a)` (one column)
+  correctly evaluates as a whole-table aggregate, per the docs' note that "if you
+  use a single table to create an aggregate, there would be no group-by
+  functionality — all rows would display the same value."
+
+`Sqrt`, `Log`, `Pow`, and `^` appear in **neither list**. That's the whole
+explanation for "undefined function call": the parser isn't rejecting a
+recognized-but-misused function (compare `LEN(a)` on a numeric column, which
+*is* recognized and throws a precise, different error — `"Type mismatch in
+function argument: Len(), argument 1, expected System.String"` — because `LEN`
+exists in the grammar and got the wrong argument type). `Sqrt`/`Log`/`Pow` are
+tokens the parser has simply never heard of, in any capacity, which is why the
+error is generic ("undefined function call") rather than specific. This is a
+closed grammar built for tabular filtering, computed columns, and SQL-style
+aggregation over rows — not a general-purpose math evaluator, and it was never
+going to grow `Sqrt`/`Log` just because a formula needs them.
+
+One honest loose end: `Abs(x)` neither throws nor errors — it silently evaluates
+to `DBNull` for every row when applied outside a `Parent`/`Child` aggregate
+context, which is a *different* failure mode from `Sqrt`/`Log`'s hard rejection,
+and `Abs` is not actually listed in Microsoft's aggregate table above. We did not
+chase down why the runtime special-cases `Abs` this way, because it doesn't
+matter for this project: our translator never emits a bare `Abs(...)` call in the
+first place — `abs(x)` is rewritten to `IIF((x) < 0, -(x), (x))` at translation
+time (`DataColumnExpressionEmitter.cs:72`), sidestepping the question entirely.
+Flagged here rather than silently smoothed over, per the standard we're holding
+the rest of this report to.
+
+#### The gap tracks formula complexity, not a coarse category label
+
+| # | Formula | Category | DataTable.Compute | Why |
+|---|---|---|:---:|---|
+| 1 | `a + b` | simple | ✅ pass | pure arithmetic |
+| 2 | `c * 2` | simple | ✅ pass | pure arithmetic |
+| 3 | `b - a` | simple | ✅ pass | pure arithmetic |
+| 4 | `d / 4` | simple | ✅ pass | pure arithmetic |
+| 5 | `(a + b) * 8` | complex | ✅ pass | pure arithmetic |
+| 6 | `sqrt(c^2 + d^2)` | complex | ❌ **fail** | needs `Sqrt` |
+| 7 | `log(b) + c` | complex | ❌ **fail** | needs `Log` |
+| 8 | `abs(d - b)` | complex | ✅ pass | `abs` rewritten to `IIF` |
+| 9 | `b*2` / `b/2` if `a>5` | conditional | ✅ pass | `IIF`, arithmetic only |
+| 10 | `a+1` / `d-1` if `b<10` | conditional | ✅ pass | `IIF`, arithmetic only |
+| 11 | `1` / `0` if `a==c` | conditional | ✅ pass | `IIF`, arithmetic only |
+| 12 | `sqrt(abs((a+b)*(c-d)) + pow(a,2))` | complex | ❌ **fail** | needs `Sqrt` |
+| 13 | `(a+b+c+d)/4` / `max(a,b)` if `sqrt(a^2+b^2)>c` | conditional | ❌ **fail** | *condition* needs `Sqrt` |
+
+Note formula 13: it's in the *conditional* category, and conditionals otherwise
+pass cleanly (9, 10, 11 all pass — `IIF` is a first-class part of the grammar).
+13 fails anyway, because its **condition**, not its value branches, calls `sqrt`.
+The simple/complex/conditional taxonomy is a useful lens for the performance
+question in §2, but it is not the actual failure boundary here — the real
+boundary is exactly "does this formula invoke `sqrt` or `log` anywhere, in the
+value expression *or* the condition." All 4 formulas that do, fail. All 9 that
+don't, pass. That boundary is sharper and more informative than "complex
+formulas fail": it's specifically transcendental math that DataTable.Compute
+cannot express, regardless of which structural category the formula otherwise
+falls into.
+
+**The implication is not "DataTable.Compute is slower on hard formulas" — it's
+that DataTable.Compute does not degrade gracefully as formulas get harder. It
+stops working, entirely, the moment a formula needs `sqrt` or `log`.** For a
+payments system whose formula catalog is expected to grow in complexity over
+time (new agreements, new laws, new rates — see the brief's own premise), a
+method that cannot express a square root is disqualified on **expressiveness**,
+before its performance is even worth discussing. This reframes the project's
+central question — "does the ranking change as formulas get more complex?" —
+more sharply than a timing chart alone can: the answer isn't only that relative
+timings shift (they do, see §2's complexity chart), it's that **one engine drops
+out of contention entirely.** The fastest-*looking* naive baseline, on the
+formulas it happens to run, is not actually a candidate for a system whose whole
+premise is formulas that change and grow.
 
 ### Python `numpy_engine.py`
 Translates each formula into a NumPy source string once (`to_numpy_expr` in

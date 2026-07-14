@@ -42,6 +42,13 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'coverage.reasonSqrt': 'no Sqrt() function',
     'coverage.reasonLog': 'no Log() function',
     'coverage.coverageLabel': 'Coverage: {covered} / {total} formulas',
+    'coverage.implication':
+      'This is a disqualification on expressiveness, not a performance gap: the failure tracks ' +
+      'sqrt/log usage exactly (all 4 skipped formulas need one, all 9 passing ones don’t) — ' +
+      'including #13, a conditional formula that fails because its condition calls sqrt even though ' +
+      'conditionals otherwise pass cleanly. The method does not degrade gracefully as formulas get ' +
+      'harder; it stops working entirely. See REPORT.md §1 for the runtime’s own error and the ' +
+      'grammar reference.',
 
     'table.method': 'Method',
     'table.formulas': 'Formulas',
@@ -121,6 +128,12 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'coverage.reasonSqrt': 'אין פונקציית ()Sqrt',
     'coverage.reasonLog': 'אין פונקציית ()Log',
     'coverage.coverageLabel': 'כיסוי: {covered} מתוך {total} נוסחאות',
+    'coverage.implication':
+      'זוהי פסילה מבחינת יכולת ביטוי, לא פער ביצועים: הכישלון עוקב בדיוק אחרי שימוש ב-sqrt/log ' +
+      '(כל 4 הנוסחאות שדולגו זקוקות לאחת מהן, וכל 9 הנוסחאות שעוברות לא) — כולל נוסחה #13, נוסחה ' +
+      'מותנית שנכשלת כי התנאי שלה קורא ל-sqrt, אף שנוסחאות מותנות בדרך כלל עוברות בלי בעיה. השיטה ' +
+      'לא נחלשת בהדרגה ככל שהנוסחאות מתקשות — היא פשוט מפסיקה לעבוד. ראו REPORT.md, סעיף 1, לשגיאת ' +
+      'ה-runtime המדויקת ולהפניה לדקדוק.',
 
     'table.method': 'שיטה',
     'table.formulas': 'נוסחאות',
