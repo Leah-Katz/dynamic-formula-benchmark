@@ -16,6 +16,7 @@ GO
 -- Drop in FK-safe order (children before parents) if re-running.
 IF OBJECT_ID('dbo.t_results', 'U') IS NOT NULL DROP TABLE dbo.t_results;
 IF OBJECT_ID('dbo.t_log', 'U')     IS NOT NULL DROP TABLE dbo.t_log;
+IF OBJECT_ID('dbo.t_sample', 'U')  IS NOT NULL DROP TABLE dbo.t_sample;
 IF OBJECT_ID('dbo.t_targil', 'U')  IS NOT NULL DROP TABLE dbo.t_targil;
 IF OBJECT_ID('dbo.t_data', 'U')    IS NOT NULL DROP TABLE dbo.t_data;
 GO
@@ -59,6 +60,17 @@ GO
 -- (targil_id, method, data_id) for every persisted row -- index it.
 CREATE INDEX IX_t_results_targil_method_data
     ON dbo.t_results (targil_id, method, data_id);
+GO
+
+-- t_sample: the deterministic 10,000-row data_id sample persisted by every
+-- engine/formula (Step 6). Generated once (scripts/seed_data.py, seeded
+-- RNG) and shared via this table rather than re-derived per engine --
+-- reproducing one RNG algorithm bit-for-bit across Python/C#/T-SQL would be
+-- fragile and isn't the point of the exercise; a shared table guarantees
+-- every method persists the exact same ids trivially.
+CREATE TABLE dbo.t_sample (
+    data_id INT NOT NULL PRIMARY KEY FOREIGN KEY REFERENCES dbo.t_data(data_id)
+);
 GO
 
 -- t_log: one row per (targil_id, method) per run, with a split timing

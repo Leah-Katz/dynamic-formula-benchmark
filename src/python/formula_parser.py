@@ -207,3 +207,19 @@ def to_numpy_expr(formula: str, *, is_condition: bool = False) -> str:
     is meant to be eval()'d once with {'np': numpy, 'a': arr_a, ...}."""
     tree = validate(formula, is_condition=is_condition)
     return _emit_numpy(tree)
+
+
+def to_numpy_condition_sides(formula: str) -> tuple[str, str, str]:
+    """Validate a condition (tnai) and split it into (left_expr, op_symbol,
+    right_expr) NumPy source strings, evaluated separately. Needed so the
+    NumPy engine can independently check each side for a domain error
+    (NaN/Inf) per SEMANTICS.md section 5: if either side of the condition
+    itself is undefined, the overall row result is NULL, not a silent
+    default to the false branch (NaN comparisons are False in IEEE-754,
+    which would otherwise steer such rows into targil_false unnoticed)."""
+    tree = validate(formula, is_condition=True)
+    cmp = tree.body
+    left_src = _emit_numpy(cmp.left)
+    right_src = _emit_numpy(cmp.comparators[0])
+    op = _COMPARE_SYMBOL[type(cmp.ops[0])]
+    return left_src, op, right_src

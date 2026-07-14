@@ -31,6 +31,7 @@ import pyodbc
 
 sys.path.insert(0, ".")
 from config import CONNECTION_STRING
+from src.python.persistence import sample_data_ids
 
 SEED = 42
 N_ROWS = 1_000_000
@@ -76,8 +77,22 @@ def clear_existing(conn: pyodbc.Connection) -> None:
     cur = conn.cursor()
     cur.execute("DELETE FROM dbo.t_log")
     cur.execute("DELETE FROM dbo.t_results")
+    cur.execute("DELETE FROM dbo.t_sample")
     cur.execute("DELETE FROM dbo.t_data")
     conn.commit()
+
+
+def seed_sample_table(conn: pyodbc.Connection) -> None:
+    """Populate t_sample with the deterministic 10,000-id sample (seeded
+    RNG, see persistence.sample_data_ids) that every engine persists its
+    row-level results for. Generated once here rather than re-derived per
+    engine -- see sql/01_schema.sql comment on t_sample for why."""
+    ids = sample_data_ids()
+    cur = conn.cursor()
+    cur.fast_executemany = True
+    cur.executemany("INSERT INTO dbo.t_sample (data_id) VALUES (?)", [(int(i),) for i in ids.tolist()])
+    conn.commit()
+    print(f"Seeded t_sample with {len(ids):,} deterministic ids.")
 
 
 def bulk_load(conn: pyodbc.Connection, data_id, a, b, c, d) -> float:
@@ -116,6 +131,8 @@ def main() -> None:
         count = cur.fetchone()[0]
         assert count == N_ROWS, f"expected {N_ROWS} rows in t_data, found {count}"
         print(f"Verified: t_data now has {count:,} rows.")
+
+        seed_sample_table(conn)
     finally:
         conn.close()
 
