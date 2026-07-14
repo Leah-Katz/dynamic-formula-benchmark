@@ -6,9 +6,10 @@ A payments system computes hundreds of payment types from formulas stored as
 strings in a database and evaluated dynamically at runtime. This project
 implements five different strategies for evaluating those formulas over a
 1,000,000-row dataset, benchmarks them against each other, cross-verifies they
-all produce identical results, and recommends the best one. See **REPORT.md**
-for the full writeup and **SEMANTICS.md** for the cross-engine evaluation
-contract every method must satisfy identically.
+all produce identical results, and recommends the best one. See **[REPORT.md](REPORT.md)**
+(English) / **[REPORT.he.md](REPORT.he.md)** (עברית) for the full writeup and
+**SEMANTICS.md** for the cross-engine evaluation contract every method must
+satisfy identically. The live report itself has an EN/HE toggle built in.
 
 ## Architecture
 

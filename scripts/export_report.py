@@ -61,15 +61,17 @@ def fetch_latest_runs(conn) -> list[dict]:
     ]
 
 
-def build_summaries(runs: list[dict], method_labels: dict[str, str]) -> list[dict]:
+def build_summaries(runs: list[dict], method_labels: dict[str, str], all_targil_ids: list[int]) -> list[dict]:
     by_method: dict[str, list[dict]] = {}
     for run in runs:
         by_method.setdefault(run["method"], []).append(run)
 
+    total_formula_count = len(all_targil_ids)
     raw = []
     for method, method_runs in by_method.items():
         total_runtime = sum(r["runTimeMs"] for r in method_runs)
         total_rows = sum(r["rowsProcessed"] for r in method_runs)
+        covered_ids = {r["targilId"] for r in method_runs}
         raw.append(
             {
                 "method": method,
@@ -78,6 +80,11 @@ def build_summaries(runs: list[dict], method_labels: dict[str, str]) -> list[dic
                 "totalRowsProcessed": total_rows,
                 "rowsPerSec": (total_rows / total_runtime * 1000.0) if total_runtime > 0 else 0.0,
                 "formulaCount": len(method_runs),
+                "totalFormulaCount": total_formula_count,
+                # Diffed from the actual data (t_log vs. the full catalog),
+                # never hardcoded -- reflects whatever coverage gap a given
+                # run actually has, for any method, not just DataTable.Compute.
+                "missingFormulaIds": sorted(set(all_targil_ids) - covered_ids),
             }
         )
 
@@ -99,11 +106,21 @@ def build_winner(summaries: list[dict]) -> dict:
     winner = min(eligible, key=lambda s: s["totalRuntimeMs"])
     return {
         "method": winner["method"],
-        "justification": (
+        # Bilingual because this is data-generated prose with real per-run
+        # numbers, not static UI chrome -- the frontend can't translate a
+        # sentence it never sees the English source of, so both versions
+        # are produced here from the same numbers, not translated client-side.
+        "justificationEn": (
             f"Fastest method that covers every formula in the catalog: {winner['totalRuntimeMs']:.0f} ms total, "
             f"{winner['rowsPerSec']:.0f} rows/sec, {winner['speedupVsSlowest']:.0f}x faster than the slowest method. "
             "Compiles each formula once into a cached delegate, avoiding both per-row re-parsing and a DB round trip "
             "per formula."
+        ),
+        "justificationHe": (
+            f"השיטה המהירה ביותר שמכסה את כל הנוסחאות בקטלוג: {winner['totalRuntimeMs']:.0f} ms סה\"כ, "
+            f"{winner['rowsPerSec']:.0f} שורות בשנייה, פי {winner['speedupVsSlowest']:.0f} מהיר יותר מהשיטה האיטית ביותר. "
+            "מהדרת כל נוסחה פעם אחת לנציג (delegate) שמור במטמון, וכך נמנעת גם מפענוח חוזר של הנוסחה בכל שורה וגם "
+            "מסבב תקשורת נוסף מול מסד הנתונים עבור כל נוסחה."
         ),
     }
 
@@ -136,7 +153,7 @@ def main() -> None:
         for f in formulas_raw
     ]
 
-    summaries = build_summaries(runs, method_labels)
+    summaries = build_summaries(runs, method_labels, [f["targil_id"] for f in formulas_raw])
     winner = build_winner(summaries)
 
     verdict = {

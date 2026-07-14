@@ -1,15 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { ChartComponent } from '../chart/chart';
+import { I18nService } from '../../i18n/i18n.service';
 import { FormulaCategory, FormulaResult, MethodRun } from '../../models/benchmark.model';
 import { METHOD_META, methodColor, methodLabel } from '../../models/method-meta';
 
 const CATEGORIES: FormulaCategory[] = ['simple', 'complex', 'conditional'];
-const CATEGORY_LABELS: Record<FormulaCategory, string> = {
-  simple: 'Simple',
-  complex: 'Complex',
-  conditional: 'Conditional',
-};
 
 /**
  * The most interesting question in the project: does the ranking between
@@ -27,6 +23,7 @@ const CATEGORY_LABELS: Record<FormulaCategory, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ComplexityChartComponent {
+  protected readonly i18n = inject(I18nService);
   readonly runs = input.required<MethodRun[]>();
   readonly formulas = input.required<FormulaResult[]>();
 
@@ -35,6 +32,7 @@ export class ComplexityChartComponent {
   readonly config = computed<ChartConfiguration>(() => {
     const formulas = this.formulas();
     const methods = Object.keys(METHOD_META).filter((m) => this.runs().some((r) => r.method === m));
+    const rtl = this.i18n.locale() === 'he';
 
     const datasets = methods.map((method) => ({
       label: methodLabel(method),
@@ -52,24 +50,28 @@ export class ComplexityChartComponent {
 
     return {
       type: 'bar',
-      data: { labels: CATEGORIES.map((c) => CATEGORY_LABELS[c]), datasets },
+      data: { labels: CATEGORIES.map((c) => this.i18n.t(`category.${c}`)), datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'nearest', intersect: false },
+        rtl,
         scales: {
-          x: { grid: { display: false } },
+          x: { grid: { display: false }, reverse: rtl },
           y: {
             type: this.logScale() ? 'logarithmic' : 'linear',
-            title: { display: true, text: 'Avg. run time per formula (ms, log scale)' },
+            title: { display: true, text: this.i18n.t(this.logScale() ? 'complexity.yAxis' : 'complexity.yAxisLinear') },
             grid: { color: 'rgba(137,135,129,0.2)' },
+            position: rtl ? 'right' : 'left',
           },
         },
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', rtl, textDirection: rtl ? 'rtl' : 'ltr' },
           tooltip: {
+            rtl,
+            textDirection: rtl ? 'rtl' : 'ltr',
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${(ctx.raw as number)?.toFixed(1)} ms avg`,
+              label: (ctx) => `${ctx.dataset.label}: ${(ctx.raw as number)?.toFixed(1)} ${this.i18n.t('common.msUnit')} avg`,
             },
           },
         },

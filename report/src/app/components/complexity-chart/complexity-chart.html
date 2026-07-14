@@ -1,12 +1,12 @@
 <div class="panel panel--featured">
   <div class="panel__header">
     <div>
-      <h2>Does the ranking change as formulas get more complex?</h2>
-      <p class="panel__subtitle">Average run time per formula, grouped by simple / complex / conditional</p>
+      <h2>{{ i18n.t('complexity.title') }}</h2>
+      <p class="panel__subtitle">{{ i18n.t('complexity.subtitle') }}</p>
     </div>
     <label class="scale-toggle">
       <input type="checkbox" [checked]="logScale()" (change)="toggleScale()" />
-      Log scale
+      {{ i18n.t('common.logScale') }}
     </label>
   </div>
   <app-chart [config]="config()" [heightPx]="380" />

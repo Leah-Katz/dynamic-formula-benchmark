@@ -52,3 +52,12 @@
   font-size: 0.85rem;
   margin-top: 0.35rem;
 }
+
+.badge__note a {
+  color: inherit;
+  text-decoration: underline dotted;
+}
+
+.badge__note a:hover {
+  color: var(--text-primary);
+}

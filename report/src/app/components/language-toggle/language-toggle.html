@@ -1,0 +1,18 @@
+<div class="lang-toggle" role="group" [attr.aria-label]="i18n.t('lang.toggleLabel')">
+  <button
+    type="button"
+    [class.active]="i18n.locale() === 'en'"
+    [attr.aria-pressed]="i18n.locale() === 'en'"
+    (click)="select('en')"
+  >
+    EN
+  </button>
+  <button
+    type="button"
+    [class.active]="i18n.locale() === 'he'"
+    [attr.aria-pressed]="i18n.locale() === 'he'"
+    (click)="select('he')"
+  >
+    עברית
+  </button>
+</div>

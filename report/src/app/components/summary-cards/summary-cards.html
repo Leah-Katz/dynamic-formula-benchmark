@@ -1,24 +1,24 @@
 <div class="winner-callout">
-  <div class="winner-callout__label">Recommended method</div>
+  <div class="winner-callout__label">{{ i18n.t('summary.recommended') }}</div>
   <div class="winner-callout__method">{{ winnerLabel() }}</div>
-  <p class="winner-callout__justification">{{ winner().justification }}</p>
+  <p class="winner-callout__justification">{{ winnerJustification() }}</p>
 </div>
 
 <div class="stat-grid">
   <div class="stat-tile">
     <div class="stat-tile__value">{{ formulaCount() }}</div>
-    <div class="stat-tile__label">Formulas benchmarked</div>
+    <div class="stat-tile__label">{{ i18n.t('summary.formulasBenchmarked') }}</div>
   </div>
   <div class="stat-tile">
-    <div class="stat-tile__value">{{ fastest().totalRuntimeMs | number: '1.0-0' }} ms</div>
-    <div class="stat-tile__label">Fastest total runtime ({{ fastest().label }})</div>
+    <div class="stat-tile__value">{{ fastest().totalRuntimeMs | number: '1.0-0' }} {{ i18n.t('common.msUnit') }}</div>
+    <div class="stat-tile__label">{{ i18n.t('summary.fastestTotal', { label: fastest().label }) }}</div>
   </div>
   <div class="stat-tile">
-    <div class="stat-tile__value">{{ slowest().totalRuntimeMs | number: '1.0-0' }} ms</div>
-    <div class="stat-tile__label">Slowest total runtime ({{ slowest().label }})</div>
+    <div class="stat-tile__value">{{ slowest().totalRuntimeMs | number: '1.0-0' }} {{ i18n.t('common.msUnit') }}</div>
+    <div class="stat-tile__label">{{ i18n.t('summary.slowestTotal', { label: slowest().label }) }}</div>
   </div>
   <div class="stat-tile">
     <div class="stat-tile__value">{{ maxSpeedup() | number: '1.0-0' }}&times;</div>
-    <div class="stat-tile__label">Spread: fastest vs. slowest</div>
+    <div class="stat-tile__label">{{ i18n.t('summary.spread') }}</div>
   </div>
 </div>

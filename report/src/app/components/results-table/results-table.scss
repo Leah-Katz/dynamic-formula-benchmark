@@ -1,56 +1,9 @@
-.table-scroll {
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-1);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-
-thead th {
-  text-align: left;
-  border-bottom: 1px solid var(--gridline);
-  padding: 0;
-}
-
-thead button {
-  all: unset;
-  cursor: pointer;
+:host {
   display: block;
-  padding: 0.75rem 1rem;
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
 }
 
-thead button:hover {
+.coverage-flag {
+  cursor: help;
+  border-bottom: 1px dotted var(--status-warning);
   color: var(--text-primary);
-}
-
-tbody td {
-  padding: 0.65rem 1rem;
-  border-bottom: 1px solid var(--gridline);
-  color: var(--text-primary);
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.num {
-  text-align: right;
-}
-
-.swatch {
-  display: inline-block;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 2px;
-  margin-right: 0.5rem;
-  vertical-align: middle;
 }

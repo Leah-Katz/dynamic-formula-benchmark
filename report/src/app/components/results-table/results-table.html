@@ -1,21 +1,21 @@
-<div class="table-scroll" role="region" aria-label="Benchmark summary table" tabindex="0">
+<div class="table-scroll" role="region" [attr.aria-label]="i18n.t('dashboard.summaryTable')" tabindex="0">
   <table>
     <thead>
       <tr>
         <th scope="col">
-          <button type="button" (click)="setSort('label')">Method {{ sortIndicator('label') }}</button>
+          <button type="button" (click)="setSort('label')">{{ i18n.t('table.method') }} {{ sortIndicator('label') }}</button>
         </th>
         <th scope="col">
-          <button type="button" (click)="setSort('formulaCount')">Formulas {{ sortIndicator('formulaCount') }}</button>
+          <button type="button" (click)="setSort('formulaCount')">{{ i18n.t('table.formulas') }} {{ sortIndicator('formulaCount') }}</button>
         </th>
         <th scope="col">
-          <button type="button" (click)="setSort('totalRuntimeMs')">Total runtime {{ sortIndicator('totalRuntimeMs') }}</button>
+          <button type="button" (click)="setSort('totalRuntimeMs')">{{ i18n.t('table.totalRuntime') }} {{ sortIndicator('totalRuntimeMs') }}</button>
         </th>
         <th scope="col">
-          <button type="button" (click)="setSort('rowsPerSec')">Rows/sec {{ sortIndicator('rowsPerSec') }}</button>
+          <button type="button" (click)="setSort('rowsPerSec')">{{ i18n.t('table.rowsPerSec') }} {{ sortIndicator('rowsPerSec') }}</button>
         </th>
         <th scope="col">
-          <button type="button" (click)="setSort('speedupVsSlowest')">Speedup vs. slowest {{ sortIndicator('speedupVsSlowest') }}</button>
+          <button type="button" (click)="setSort('speedupVsSlowest')">{{ i18n.t('table.speedup') }} {{ sortIndicator('speedupVsSlowest') }}</button>
         </th>
       </tr>
     </thead>
@@ -26,8 +26,16 @@
             <span class="swatch" [style.background]="color(row.method)" aria-hidden="true"></span>
             {{ row.label }}
           </td>
-          <td class="num">{{ row.formulaCount }}</td>
-          <td class="num">{{ row.totalRuntimeMs | number: '1.0-1' }} ms</td>
+          <td class="num">
+            @if (coverageTooltip(row); as tip) {
+              <span class="coverage-flag" [attr.title]="tip" [attr.aria-label]="tip"
+                >{{ row.formulaCount }} / {{ row.totalFormulaCount }} &#9888;</span
+              >
+            } @else {
+              {{ row.formulaCount }}
+            }
+          </td>
+          <td class="num">{{ row.totalRuntimeMs | number: '1.0-1' }} {{ i18n.t('common.msUnit') }}</td>
           <td class="num">{{ row.rowsPerSec | number: '1.0-0' }}</td>
           <td class="num">{{ row.speedupVsSlowest | number: '1.1-1' }}&times;</td>
         </tr>

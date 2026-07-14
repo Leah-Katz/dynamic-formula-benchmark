@@ -133,6 +133,71 @@ body {
   font-weight: 700;
 }
 
+.panel__subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Shared, RTL-safe (logical properties throughout) table chrome, reused by
+   results-table and formula-catalog. */
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-1);
+}
+
+.table-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-scroll thead th {
+  text-align: start;
+  border-block-end: 1px solid var(--gridline);
+  padding: 0;
+}
+
+.table-scroll thead button {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.table-scroll thead button:hover {
+  color: var(--text-primary);
+}
+
+.table-scroll tbody td {
+  padding: 0.65rem 1rem;
+  border-block-end: 1px solid var(--gridline);
+  color: var(--text-primary);
+}
+
+.table-scroll tbody tr:last-child td {
+  border-block-end: none;
+}
+
+.table-scroll .num {
+  text-align: end;
+}
+
+.table-scroll .swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  margin-inline-end: 0.5rem;
+  vertical-align: middle;
+}
+
 .scale-toggle {
   display: flex;
   align-items: center;

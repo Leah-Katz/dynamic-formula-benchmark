@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { I18nService } from '../../i18n/i18n.service';
 import { ComparisonVerdict } from '../../models/benchmark.model';
 
 @Component({
@@ -9,21 +10,22 @@ import { ComparisonVerdict } from '../../models/benchmark.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CorrectnessBadgeComponent {
+  protected readonly i18n = inject(I18nService);
   readonly verdict = input.required<ComparisonVerdict>();
 
-  readonly statusLabel = computed(() => (this.verdict().allPass ? 'All methods agree' : 'Mismatch detected'));
+  readonly statusLabel = computed(() => this.i18n.t(this.verdict().allPass ? 'badge.allAgree' : 'badge.mismatch'));
 
   readonly detail = computed(() => {
     const v = this.verdict();
     return v.allPass
-      ? `All 5 methods produced identical results (tolerance ${v.tolerance.toExponential(0)})`
-      : `${v.rowLevelFail} row-level and ${v.fullDatasetFail} full-dataset mismatch(es) found`;
+      ? this.i18n.t('badge.detailPass', { tolerance: v.tolerance.toExponential(0) })
+      : this.i18n.t('badge.detailFail', { rowFail: v.rowLevelFail, fullFail: v.fullDatasetFail });
   });
 
+  // Echoes the coverage-callout's finding (see coverage-callout.ts) and
+  // links to it -- an N/A here IS that finding, not a separate caveat.
   readonly naNote = computed(() => {
     const v = this.verdict();
-    return v.rowLevelNa > 0
-      ? `${v.rowLevelNa} formula/method combination(s) marked N/A -- documented limitation, not a failure (see REPORT.md)`
-      : null;
+    return v.rowLevelNa > 0 ? this.i18n.t('badge.naNote', { count: v.rowLevelNa }) : null;
   });
 }

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { ChartComponent } from '../chart/chart';
+import { I18nService } from '../../i18n/i18n.service';
 import { MethodRun } from '../../models/benchmark.model';
 import { METHOD_META, methodLabel } from '../../models/method-meta';
 
@@ -25,10 +26,12 @@ function cssVar(name: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BreakdownChartComponent {
+  protected readonly i18n = inject(I18nService);
   readonly runs = input.required<MethodRun[]>();
 
   readonly config = computed<ChartConfiguration>(() => {
     const methods = Object.keys(METHOD_META).filter((m) => this.runs().some((r) => r.method === m));
+    const rtl = this.i18n.locale() === 'he';
     const totals = methods.map((method) => {
       const rows = this.runs().filter((r) => r.method === method);
       return {
@@ -44,19 +47,19 @@ export class BreakdownChartComponent {
         labels: methods.map(methodLabel),
         datasets: [
           {
-            label: 'Compile',
+            label: this.i18n.t('breakdown.compile'),
             data: totals.map((t) => t.compile),
             backgroundColor: cssVar('--phase-compile'),
             stack: 'phases',
           },
           {
-            label: 'Eval',
+            label: this.i18n.t('breakdown.eval'),
             data: totals.map((t) => t.eval),
             backgroundColor: cssVar('--phase-eval'),
             stack: 'phases',
           },
           {
-            label: 'Persist',
+            label: this.i18n.t('breakdown.persist'),
             data: totals.map((t) => t.persist),
             backgroundColor: cssVar('--phase-persist'),
             stack: 'phases',
@@ -68,15 +71,23 @@ export class BreakdownChartComponent {
         maintainAspectRatio: false,
         indexAxis: 'y',
         interaction: { mode: 'nearest', intersect: false },
+        rtl,
         scales: {
-          x: { stacked: true, title: { display: true, text: 'Total time (ms)' }, grid: { color: 'rgba(137,135,129,0.2)' } },
-          y: { stacked: true, grid: { display: false } },
+          x: {
+            stacked: true,
+            title: { display: true, text: this.i18n.t('breakdown.xAxis') },
+            grid: { color: 'rgba(137,135,129,0.2)' },
+            reverse: rtl,
+          },
+          y: { stacked: true, grid: { display: false }, position: rtl ? 'right' : 'left' },
         },
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', rtl, textDirection: rtl ? 'rtl' : 'ltr' },
           tooltip: {
+            rtl,
+            textDirection: rtl ? 'rtl' : 'ltr',
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${(ctx.raw as number)?.toFixed(1)} ms`,
+              label: (ctx) => `${ctx.dataset.label}: ${(ctx.raw as number)?.toFixed(1)} ${this.i18n.t('common.msUnit')}`,
             },
           },
         },

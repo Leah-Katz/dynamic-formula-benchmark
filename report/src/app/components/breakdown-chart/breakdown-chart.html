@@ -1,12 +1,7 @@
 <div class="panel">
   <div class="panel__header">
-    <h2>Compile / eval / persist breakdown</h2>
+    <h2>{{ i18n.t('breakdown.title') }}</h2>
   </div>
   <app-chart [config]="config()" [heightPx]="280" />
-  <p class="panel__note">
-    T-SQL sp_executesql's eval and persist phases each independently re-scan and
-    re-evaluate the formula (no shared in-memory result between statements) --
-    its breakdown is not a clean apples-to-apples decomposition against the
-    other four methods. See REPORT.md.
-  </p>
+  <p class="panel__note">{{ i18n.t('breakdown.note') }}</p>
 </div>

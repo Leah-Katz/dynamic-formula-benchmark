@@ -1,0 +1,20 @@
+@if (gap(); as g) {
+  <div class="coverage-callout" id="coverage-finding">
+    <div class="coverage-callout__icon" aria-hidden="true">&#9888;</div>
+    <div>
+      <div class="coverage-callout__title">{{ i18n.t('coverage.title') }}</div>
+      <p class="coverage-callout__body">{{ i18n.t('coverage.body') }}</p>
+      <div class="coverage-callout__meta">
+        <span class="coverage-callout__coverage">
+          {{ i18n.t('coverage.coverageLabel', { covered: g.formulaCount, total: g.totalFormulaCount }) }}
+        </span>
+        <span class="coverage-callout__skipped">
+          {{ i18n.t('coverage.skippedLabel') }}
+          @for (id of g.missingFormulaIds; track id; let last = $last) {
+            <span class="coverage-callout__chip">#{{ id }}</span>@if (!last) {<span>,&nbsp;</span>}
+          }
+        </span>
+      </div>
+    </div>
+  </div>
+}

@@ -1,11 +1,12 @@
 @if (data(); as d) {
   <header class="dashboard__header">
-    <h1>Dynamic Formula Evaluation Benchmark</h1>
-    <p>
-      {{ d.formulas.length }} formulas &times; 1,000,000 rows, evaluated by 5 engines
-      (Python <code>eval()</code>, NumPy, C# DataTable.Compute, C# Expression Trees, T-SQL
-      <code>sp_executesql</code>) and cross-verified for correctness.
-    </p>
+    <div class="dashboard__header-row">
+      <div>
+        <h1>{{ i18n.t('app.title') }}</h1>
+        <p>{{ i18n.t('app.subtitle', { count: d.formulas.length }) }}</p>
+      </div>
+      <app-language-toggle />
+    </div>
   </header>
 
   <app-correctness-badge [verdict]="d.verdict" class="dashboard__section" />
@@ -17,6 +18,10 @@
     class="dashboard__section"
   />
 
+  <app-coverage-callout [summaries]="d.summaries" class="dashboard__section" />
+
+  <app-formula-catalog [formulas]="d.formulas" class="dashboard__section" />
+
   <app-complexity-chart [runs]="d.runs" [formulas]="d.formulas" class="dashboard__section" />
 
   <div class="dashboard__grid dashboard__section">
@@ -25,9 +30,9 @@
   </div>
 
   <section class="dashboard__section">
-    <h2>Summary table</h2>
+    <h2>{{ i18n.t('dashboard.summaryTable') }}</h2>
     <app-results-table [summaries]="d.summaries" />
   </section>
 } @else {
-  <div class="dashboard__loading">Loading benchmark results&hellip;</div>
+  <div class="dashboard__loading">{{ i18n.t('dashboard.loading') }}</div>
 }

@@ -30,6 +30,10 @@ export interface MethodSummary {
   rowsPerSec: number;
   speedupVsSlowest: number;
   formulaCount: number;
+  totalFormulaCount: number;
+  /** targil_ids with no run at all for this method -- computed from the
+   * data (diffing the full catalog against t_log), never hardcoded. */
+  missingFormulaIds: number[];
 }
 
 export interface ComparisonVerdict {
@@ -47,7 +51,8 @@ export interface ComparisonVerdict {
 
 export interface Winner {
   method: string;
-  justification: string;
+  justificationEn: string;
+  justificationHe: string;
 }
 
 export interface BenchmarkData {

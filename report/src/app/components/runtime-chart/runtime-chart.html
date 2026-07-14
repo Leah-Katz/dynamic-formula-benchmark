@@ -1,9 +1,9 @@
 <div class="panel">
   <div class="panel__header">
-    <h2>Run time per method, per formula</h2>
+    <h2>{{ i18n.t('runtime.title') }}</h2>
     <label class="scale-toggle">
       <input type="checkbox" [checked]="logScale()" (change)="toggleScale()" />
-      Log scale
+      {{ i18n.t('common.logScale') }}
     </label>
   </div>
   <app-chart [config]="config()" [heightPx]="380" />

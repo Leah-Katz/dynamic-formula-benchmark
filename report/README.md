@@ -1,5 +1,10 @@
 # Report
 
+This is the Angular dashboard for the Dynamic Formula Evaluation Benchmark. For the
+project overview, architecture, and run instructions, see [`../README.md`](../README.md).
+For the graded technical writeup, see [`../REPORT.md`](../REPORT.md) (English) /
+[`../REPORT.he.md`](../REPORT.he.md) (עברית).
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.6.
 
 ## Development server

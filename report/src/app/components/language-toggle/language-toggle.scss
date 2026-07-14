@@ -1,0 +1,26 @@
+.lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex: none;
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  box-sizing: border-box;
+}
+
+button.active {
+  background: var(--series-dotnet-exprtree);
+  color: #fff;
+}
+
+button:not(.active):hover {
+  background: var(--gridline);
+}

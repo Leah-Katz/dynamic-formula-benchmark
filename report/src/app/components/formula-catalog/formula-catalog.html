@@ -1,0 +1,34 @@
+<div class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>{{ i18n.t('catalog.title') }}</h2>
+      <p class="panel__subtitle">{{ i18n.t('catalog.subtitle', { count: formulas().length }) }}</p>
+    </div>
+  </div>
+  <div class="table-scroll" role="region" [attr.aria-label]="i18n.t('catalog.title')" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">{{ i18n.t('catalog.colId') }}</th>
+          <th scope="col">{{ i18n.t('catalog.colFormula') }}</th>
+          <th scope="col">{{ i18n.t('catalog.colCondition') }}</th>
+          <th scope="col">{{ i18n.t('catalog.colFalseBranch') }}</th>
+          <th scope="col">{{ i18n.t('catalog.colCategory') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of formulas(); track f.targilId) {
+          <tr [id]="'formula-' + f.targilId">
+            <td class="num">#{{ f.targilId }}</td>
+            <td><code>{{ f.targil }}</code></td>
+            <td><code>{{ f.tnai ?? i18n.t('catalog.none') }}</code></td>
+            <td><code>{{ f.targilFalse ?? i18n.t('catalog.none') }}</code></td>
+            <td>
+              <span class="category-tag" [class]="'category-tag--' + f.category">{{ categoryLabel(f.category) }}</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
