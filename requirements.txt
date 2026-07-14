@@ -1,0 +1,2 @@
+pyodbc>=5.0
+numpy>=2.0
