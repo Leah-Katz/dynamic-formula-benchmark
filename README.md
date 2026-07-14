@@ -1,6 +1,6 @@
 # PaymentSystem — Dynamic Formula Evaluation Benchmark
 
-**Live report:** _pending GitHub Pages deployment — see "Deployment" below._
+**Live report:** https://leah-katz.github.io/dynamic-formula-benchmark/
 
 A payments system computes hundreds of payment types from formulas stored as
 strings in a database and evaluated dynamically at runtime. This project
@@ -136,15 +136,31 @@ new benchmark run, then refresh.
 
 ## Deployment
 
+Deployed via [`angular-cli-ghpages`](https://github.com/angular-schule/angular-cli-ghpages)
+(a devDependency of `report/`), chosen over a GitHub Actions workflow because it
+pushes the built output straight to a `gh-pages` branch over git with one
+command — no CI run to wait on or debug, and it works from any machine with
+push access, not just from GitHub's own runners:
+
 ```
 cd report
-ng build --base-href /<repo-name>/
+npx ng build --base-href /dynamic-formula-benchmark/
+npx angular-cli-ghpages --dir=dist/report/browser --branch=gh-pages
 ```
 
-Deploy the contents of `report/dist/report/browser` to GitHub Pages (e.g. the
-`gh-pages` branch, or via `angular-cli-ghpages`). Verify the deployed link
-actually renders before treating this as done — a wrong `--base-href` 404s
-every asset on a cold load.
+This creates/updates the `gh-pages` branch with exactly the build output
+(plus a `.nojekyll` file and a `404.html` SPA-redirect fallback that the tool
+adds automatically) and pushes it. GitHub Pages then serves it directly — no
+manual **Settings → Pages** change was needed for this repo (Pages was
+already serving from `gh-pages` once the branch existed); if it ever isn't,
+set **Settings → Pages → Build and deployment → Source: Deploy from a
+branch**, **Branch: `gh-pages` / `(root)`**.
+
+Verify the deployed link actually renders before treating a deploy as done —
+a wrong `--base-href` 404s every asset on a cold load. (On Windows + Git Bash,
+watch out for MSYS path conversion mangling a leading-slash argument like
+`--base-href /dynamic-formula-benchmark/` into a Windows path — prefix the
+command with `MSYS_NO_PATHCONV=1` if that happens.)
 
 ## Screenshots
 
