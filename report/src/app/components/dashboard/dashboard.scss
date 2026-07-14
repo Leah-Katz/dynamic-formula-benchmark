@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.dashboard__header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.dashboard__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 80ch;
+}
+
+.dashboard__header code {
+  background: var(--gridline);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.dashboard__section {
+  display: block;
+  margin-top: 1.75rem;
+}
+
+.dashboard__section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1.25rem;
+  align-items: start;
+
+  /* Grid items default to min-width: auto, which refuses to shrink below
+     the canvas's intrinsic size -- without this, a wide Chart.js canvas
+     overflows its column instead of resizing to fit it. */
+  > * {
+    min-width: 0;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard__loading {
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+}

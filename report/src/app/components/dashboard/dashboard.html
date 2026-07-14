@@ -1,0 +1,33 @@
+@if (data(); as d) {
+  <header class="dashboard__header">
+    <h1>Dynamic Formula Evaluation Benchmark</h1>
+    <p>
+      {{ d.formulas.length }} formulas &times; 1,000,000 rows, evaluated by 5 engines
+      (Python <code>eval()</code>, NumPy, C# DataTable.Compute, C# Expression Trees, T-SQL
+      <code>sp_executesql</code>) and cross-verified for correctness.
+    </p>
+  </header>
+
+  <app-correctness-badge [verdict]="d.verdict" class="dashboard__section" />
+
+  <app-summary-cards
+    [summaries]="d.summaries"
+    [winner]="d.winner"
+    [formulaCount]="d.formulas.length"
+    class="dashboard__section"
+  />
+
+  <app-complexity-chart [runs]="d.runs" [formulas]="d.formulas" class="dashboard__section" />
+
+  <div class="dashboard__grid dashboard__section">
+    <app-runtime-chart [runs]="d.runs" [formulas]="d.formulas" />
+    <app-breakdown-chart [runs]="d.runs" />
+  </div>
+
+  <section class="dashboard__section">
+    <h2>Summary table</h2>
+    <app-results-table [summaries]="d.summaries" />
+  </section>
+} @else {
+  <div class="dashboard__loading">Loading benchmark results&hellip;</div>
+}

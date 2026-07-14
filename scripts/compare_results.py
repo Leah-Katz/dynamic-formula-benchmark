@@ -17,10 +17,15 @@ Sqrt/Log -- see src/dotnet/DataTableCompute/DataColumnExpressionEmitter.cs).
 A formula/method-pair where one side has no data at all is reported N/A,
 not FAIL -- that is a documented, disclosed limitation, not a correctness
 bug. Exits non-zero on any real mismatch (N/A does not count as failure).
+
+run_comparison() is the single source of truth for the verdict: both this
+script's own CLI output and scripts/export_report.py's correctness badge
+call it, so the report's "All 5 methods agree" badge is never a claim
+independent of what this script actually verified.
 """
 
 import sys
-from collections import defaultdict
+from dataclasses import dataclass, field
 from itertools import combinations
 
 sys.path.insert(0, ".")
@@ -76,71 +81,72 @@ def fetch_latest_log(conn) -> dict[tuple[str, int], tuple[float | None, int]]:
     return out
 
 
-def main() -> int:
-    conn = persistence.connect()
-    try:
-        methods = fetch_methods(conn)
-        formulas = persistence.fetch_formulas(conn)
-        sample_ids = persistence.fetch_sample_ids(conn).tolist()
-        sample_results = fetch_sample_results(conn)
-        latest_log = fetch_latest_log(conn)
-    finally:
-        conn.close()
+@dataclass
+class ComparisonResult:
+    methods: list[str]
+    formulas: list[dict]
+    method_pairs: list[tuple[str, str]]
+    sample_size: int
+    tolerance: float = TOLERANCE
+    # (targil_id, m1, m2) -> 'PASS' | 'FAIL(n)' | 'N/A'
+    row_level_cells: dict[tuple[int, str, str], str] = field(default_factory=dict)
+    full_dataset_cells: dict[tuple[int, str, str], str] = field(default_factory=dict)
+    row_level_pass: int = 0
+    row_level_fail: int = 0
+    row_level_na: int = 0
+    full_dataset_pass: int = 0
+    full_dataset_fail: int = 0
+    full_dataset_na: int = 0
 
-    print(f"Methods found: {methods}")
-    print(f"Formulas: {len(formulas)}   Sample size: {len(sample_ids):,}   Tolerance: {TOLERANCE:g}\n")
+    @property
+    def all_pass(self) -> bool:
+        return self.row_level_fail == 0 and self.full_dataset_fail == 0
 
-    method_pairs = list(combinations(methods, 2))
-    any_failure = False
 
-    # -- Check 1: row-level sample comparison ---------------------------------
-    print("=" * 100)
-    print("ROW-LEVEL COMPARISON (10,000-row sample, per formula per method pair)")
-    print("=" * 100)
-    header = f"{'targil':>6}  " + "  ".join(f"{m1[:8]}/{m2[:8]:>8}" for m1, m2 in method_pairs)
-    print(header)
+def run_comparison(conn) -> ComparisonResult:
+    methods = fetch_methods(conn)
+    formulas = persistence.fetch_formulas(conn)
+    sample_ids = persistence.fetch_sample_ids(conn).tolist()
+    sample_results = fetch_sample_results(conn)
+    latest_log = fetch_latest_log(conn)
 
-    row_level_ok = defaultdict(lambda: True)
+    result = ComparisonResult(
+        methods=methods,
+        formulas=formulas,
+        method_pairs=list(combinations(methods, 2)),
+        sample_size=len(sample_ids),
+    )
+
     for formula in formulas:
         tid = formula["targil_id"]
-        cells = []
-        for m1, m2 in method_pairs:
-            # cheap existence check: does this method have ANY row for this formula?
+        for m1, m2 in result.method_pairs:
             m1_has = (m1, tid, sample_ids[0]) in sample_results
             m2_has = (m2, tid, sample_ids[0]) in sample_results
             if not (m1_has and m2_has):
-                cells.append(f"{'N/A':>17}")
+                result.row_level_cells[(tid, m1, m2)] = "N/A"
+                result.row_level_na += 1
                 continue
 
-            mismatches = 0
-            for did in sample_ids:
-                v1 = sample_results.get((m1, tid, did))
-                v2 = sample_results.get((m2, tid, did))
-                if not values_match(v1, v2):
-                    mismatches += 1
-
-            ok = mismatches == 0
-            row_level_ok[(m1, m2)] = row_level_ok[(m1, m2)] and ok
-            if not ok:
-                any_failure = True
-            cells.append(f"{'PASS' if ok else f'FAIL({mismatches})':>17}")
-        print(f"{tid:>6}  " + "  ".join(cells))
-
-    # -- Check 2: full-dataset checksum / null_count comparison ---------------
-    print()
-    print("=" * 100)
-    print("FULL-DATASET COMPARISON (checksum + null_count over all 1,000,000 rows, from t_log)")
-    print("=" * 100)
-    print(header)
+            mismatches = sum(
+                1
+                for did in sample_ids
+                if not values_match(sample_results.get((m1, tid, did)), sample_results.get((m2, tid, did)))
+            )
+            if mismatches == 0:
+                result.row_level_cells[(tid, m1, m2)] = "PASS"
+                result.row_level_pass += 1
+            else:
+                result.row_level_cells[(tid, m1, m2)] = f"FAIL({mismatches})"
+                result.row_level_fail += 1
 
     for formula in formulas:
         tid = formula["targil_id"]
-        cells = []
-        for m1, m2 in method_pairs:
+        for m1, m2 in result.method_pairs:
             e1 = latest_log.get((m1, tid))
             e2 = latest_log.get((m2, tid))
             if e1 is None or e2 is None:
-                cells.append(f"{'N/A':>17}")
+                result.full_dataset_cells[(tid, m1, m2)] = "N/A"
+                result.full_dataset_na += 1
                 continue
             checksum1, null1 = e1
             checksum2, null2 = e2
@@ -148,22 +154,60 @@ def main() -> int:
                 (checksum1 is None and checksum2 is None)
                 or (checksum1 is not None and checksum2 is not None and close_enough(checksum1, checksum2))
             )
-            if not ok:
-                any_failure = True
-            cells.append(f"{'PASS' if ok else 'FAIL':>17}")
-        print(f"{tid:>6}  " + "  ".join(cells))
+            if ok:
+                result.full_dataset_cells[(tid, m1, m2)] = "PASS"
+                result.full_dataset_pass += 1
+            else:
+                result.full_dataset_cells[(tid, m1, m2)] = "FAIL"
+                result.full_dataset_fail += 1
 
-    # -- Summary ---------------------------------------------------------------
+    return result
+
+
+def print_report(result: ComparisonResult) -> None:
+    print(f"Methods found: {result.methods}")
+    print(f"Formulas: {len(result.formulas)}   Sample size: {result.sample_size:,}   Tolerance: {result.tolerance:g}\n")
+
+    header = f"{'targil':>6}  " + "  ".join(f"{m1[:8]}/{m2[:8]:>8}" for m1, m2 in result.method_pairs)
+
+    print("=" * 100)
+    print("ROW-LEVEL COMPARISON (10,000-row sample, per formula per method pair)")
+    print("=" * 100)
+    print(header)
+    for formula in result.formulas:
+        tid = formula["targil_id"]
+        cells = [result.row_level_cells[(tid, m1, m2)] for m1, m2 in result.method_pairs]
+        print(f"{tid:>6}  " + "  ".join(f"{c:>17}" for c in cells))
+
     print()
     print("=" * 100)
-    if any_failure:
-        print("RESULT: MISMATCH DETECTED -- see FAIL cells above. NOT all methods agree.")
-    else:
-        print(f"RESULT: All methods produced identical results (tolerance {TOLERANCE:g}).")
+    print("FULL-DATASET COMPARISON (checksum + null_count over all 1,000,000 rows, from t_log)")
+    print("=" * 100)
+    print(header)
+    for formula in result.formulas:
+        tid = formula["targil_id"]
+        cells = [result.full_dataset_cells[(tid, m1, m2)] for m1, m2 in result.method_pairs]
+        print(f"{tid:>6}  " + "  ".join(f"{c:>17}" for c in cells))
+
+    print()
+    print("=" * 100)
+    if result.all_pass:
+        print(f"RESULT: All methods produced identical results (tolerance {result.tolerance:g}).")
         print("        (N/A cells are documented limitations, not failures -- see REPORT.md.)")
+    else:
+        print("RESULT: MISMATCH DETECTED -- see FAIL cells above. NOT all methods agree.")
     print("=" * 100)
 
-    return 1 if any_failure else 0
+
+def main() -> int:
+    conn = persistence.connect()
+    try:
+        result = run_comparison(conn)
+    finally:
+        conn.close()
+
+    print_report(result)
+    return 0 if result.all_pass else 1
 
 
 if __name__ == "__main__":

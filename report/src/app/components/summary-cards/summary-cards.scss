@@ -1,0 +1,57 @@
+.winner-callout {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--series-dotnet-exprtree) 12%, var(--surface-1)), var(--surface-1));
+  border: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+.winner-callout__label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.winner-callout__method {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-top: 0.25rem;
+  color: var(--text-primary);
+}
+
+.winner-callout__justification {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-tile {
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+
+.stat-tile__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-tile__label {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,37 @@
+<div class="table-scroll" role="region" aria-label="Benchmark summary table" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">
+          <button type="button" (click)="setSort('label')">Method {{ sortIndicator('label') }}</button>
+        </th>
+        <th scope="col">
+          <button type="button" (click)="setSort('formulaCount')">Formulas {{ sortIndicator('formulaCount') }}</button>
+        </th>
+        <th scope="col">
+          <button type="button" (click)="setSort('totalRuntimeMs')">Total runtime {{ sortIndicator('totalRuntimeMs') }}</button>
+        </th>
+        <th scope="col">
+          <button type="button" (click)="setSort('rowsPerSec')">Rows/sec {{ sortIndicator('rowsPerSec') }}</button>
+        </th>
+        <th scope="col">
+          <button type="button" (click)="setSort('speedupVsSlowest')">Speedup vs. slowest {{ sortIndicator('speedupVsSlowest') }}</button>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of sorted(); track row.method) {
+        <tr>
+          <td>
+            <span class="swatch" [style.background]="color(row.method)" aria-hidden="true"></span>
+            {{ row.label }}
+          </td>
+          <td class="num">{{ row.formulaCount }}</td>
+          <td class="num">{{ row.totalRuntimeMs | number: '1.0-1' }} ms</td>
+          <td class="num">{{ row.rowsPerSec | number: '1.0-0' }}</td>
+          <td class="num">{{ row.speedupVsSlowest | number: '1.1-1' }}&times;</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

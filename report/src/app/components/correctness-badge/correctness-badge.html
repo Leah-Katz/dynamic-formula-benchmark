@@ -1,0 +1,10 @@
+<div class="badge" [class.badge--pass]="verdict().allPass" [class.badge--fail]="!verdict().allPass">
+  <span class="badge__icon" aria-hidden="true">{{ verdict().allPass ? '✓' : '✕' }}</span>
+  <div class="badge__text">
+    <div class="badge__status">{{ statusLabel() }}</div>
+    <div class="badge__detail">{{ detail() }}</div>
+    @if (naNote(); as note) {
+      <div class="badge__note">{{ note }}</div>
+    }
+  </div>
+</div>
